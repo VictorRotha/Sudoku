@@ -1,3 +1,4 @@
-# Sudoku
+# de.victor.sudoku.Sudoku
 
-Solving and generating Sudoku puzzles
+Solving and generating Sudoku puzzles.
+
