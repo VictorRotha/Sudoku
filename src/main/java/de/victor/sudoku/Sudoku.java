@@ -15,27 +15,23 @@ public class Sudoku {
 
     }
 
+
     /**
      * Solves a sudoku puzzle.
      *
      * @param puzzle the sudoku to be solved. Pass a new int[81] to generate a new sudoku grid.
      * @return a solved puzzle or null if the puzzle can't be solved.
      */
-    public int[] solveSudoku(int[] puzzle) {
+    public int[] solvePuzzle(int[] puzzle) {
 
         int[] grid = Arrays.copyOf(puzzle, puzzle.length);
 
-        boolean result = solve(0, grid, puzzle);
+        boolean result = solve(grid);
 
         return (result) ? grid : null;
 
     }
 
-    public int[] generateSudoku() {
-
-        return solveSudoku(new int[81]);
-
-    }
 
     /**
      * Generates a random sudoku puzzle from a given, fully solved grid.
@@ -62,27 +58,29 @@ public class Sudoku {
     }
 
 
-    private boolean solve(int idx, int[] grid, int[] level) {
+    
+    private boolean solve(int[] grid) {
+        
+        int idx = 0;
+        while (grid[idx] != 0) {
+            if (++idx == grid.length)
+                return true;
+        }
 
-        if (idx == grid.length) return true;
-
-        ArrayList<Integer> candidates = new ArrayList<>();
-
-        if (level[idx] != 0)
-            candidates.add(level[idx]);
-        else
-            candidates.addAll(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        ArrayList<Integer> candidates = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
         while (candidates.size() > 0) {
             int candidate = candidates.get(random.nextInt(candidates.size()));
             candidates.remove((Integer) candidate);
             grid[idx] = candidate;
-            if (SudokuUtils.isValidNumber(idx, candidate, grid) && solve(idx + 1, grid, level)) {
+            if (SudokuUtils.isValidNumber(idx, candidate, grid) && solve(grid)) {
                 return true;
             }
         }
 
-        grid[idx] = level[idx];
+        grid[idx] = 0;
         return false;
+
     }
+
 }

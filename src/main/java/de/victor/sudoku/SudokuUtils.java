@@ -3,7 +3,6 @@ package de.victor.sudoku;
 public class SudokuUtils {
 
 
-
     public static boolean isValidNumber(int idx, int number, int[] grid) {
 
         boolean inRow = isInRow(idx, number, grid);
@@ -29,7 +28,6 @@ public class SudokuUtils {
 
         }
         return false;
-
 
     }
 
@@ -86,8 +84,11 @@ public class SudokuUtils {
 
     }
 
-
     public static void printSudoku(int[] grid) {
+        printSudoku(grid, new int[81]);
+    }
+
+    public static void printSudoku(int[] grid, int[] highlight) {
 
         for (int i = 0; i < grid.length; i++) {
 
@@ -96,8 +97,11 @@ public class SudokuUtils {
             if (i % 3 == 0 && i % 9 != 0) System.out.print("|  ");
             if (grid[i] == 0)
                 System.out.print(".  ");
-            else
+            else if (highlight[i] == 0)
                 System.out.print(grid[i] + "  ");
+            else
+                System.out.print(grid[i] + "* ");
+
         }
         System.out.println();
 
