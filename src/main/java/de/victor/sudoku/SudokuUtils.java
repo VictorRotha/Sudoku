@@ -84,11 +84,28 @@ public class SudokuUtils {
 
     }
 
+    public static boolean isGridMatchesLevel(int[] grid, int[] level) {
+
+        if (grid == null || level == null)
+            return false;
+
+        for (int i = 0; i < level.length; i++) {
+            if (level[i] != 0 && grid[i] != level[i]) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
     public static void printSudoku(int[] grid) {
         printSudoku(grid, new int[81]);
     }
 
     public static void printSudoku(int[] grid, int[] highlight) {
+
+        if (grid == null || highlight == null) return;
 
         for (int i = 0; i < grid.length; i++) {
 

@@ -1,6 +1,7 @@
 package de.victor.sudoku;
 
 
+
 public class Main {
 
     public static void main(String[] args) {
@@ -14,9 +15,13 @@ public class Main {
         int[] level = sudoku.generateRandomLevel(puzzle, 25);
         SudokuUtils.printSudoku(level);
 
-        int[] solvedLevel = sudoku.solvePuzzle(level);
-        SudokuUtils.printSudoku(solvedLevel, level);
-        System.out.println("is valid: " + SudokuUtils.isSudokuValid(solvedLevel));
+        PuzzleResult result = sudoku.solvePuzzleAnCheckForMultipleSolutions(level);
+
+        System.out.println("number of solutions: " + result.timesSolved);
+
+        SudokuUtils.printSudoku(result.firstResult);
+        SudokuUtils.printSudoku(result.secondResult);
+
 
     }
 }
