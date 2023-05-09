@@ -1,14 +1,20 @@
 package de.victor.sudoku;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Sudoku {
 
     private final Random random;
 
+
+
+    //grid: valid, fully solved puzzle
+    //puzzle: an actual sudoku puzzle (which contains empty fields)
+    //valid puzzle have only one solution
 
     public Sudoku() {
 
@@ -19,15 +25,15 @@ public class Sudoku {
     /**
      * Checks if a given level has more than one solution.
      *
-     * @param level the sudoku to be solved.
+     * @param puzzle the sudoku to be solved.
      * @return true if there is only one solution, false otherwise
      */
-    public boolean checkForSingleSolution(int[] level) {
+    public boolean checkForSingleSolution(int[] puzzle) {
 
-        int[] grid1 = Arrays.copyOf(level, level.length);
+        int[] grid1 = Arrays.copyOf(puzzle, puzzle.length);
         boolean result1 = solveOrdered(grid1, false);
 
-        int[] grid2 = Arrays.copyOf(level, level.length);
+        int[] grid2 = Arrays.copyOf(puzzle, puzzle.length);
         boolean result2 = solveOrdered(grid2, true);
 
         return (result1 && result2 && Arrays.equals(grid1, grid2));
@@ -36,27 +42,40 @@ public class Sudoku {
 
 
     /**
+     * Generates a new, fully solved puzzle grid
+     *
+     * @return int[81]
+     */
+    public int[] generatePuzzleGrid() {
+
+        int[] grid = new int[81];
+        boolean result = solveRandom(grid);
+        return (result) ? grid : null;
+
+    }
+
+    /**
      * Solves a sudoku puzzle.
      *
-     * @param puzzle the sudoku to be solved. Pass a new int[81] to generate a new sudoku grid.
+     * @param puzzle the sudoku to be solved.
      * @return a solved puzzle or null if the puzzle can't be solved.
      */
     public int[] solvePuzzle(int[] puzzle) {
 
         int[] grid = Arrays.copyOf(puzzle, puzzle.length);
-        boolean result = solve(grid);
+        boolean result = solveOrdered(grid, false);
         return (result) ? grid : null;
 
     }
 
     /**
      * Solves a sudoku puzzle and return a PuzzleResult that contains one or two possible solutions.
-     * If there are more than one solution, the algorithm stops after the second.
+     * If there are more than one solution, the algorithm stops after the second one.
      *
      * @param puzzle the sudoku to be solved.
      * @return a PuzzleResult object.
      */
-    public PuzzleResult solvePuzzleAnCheckForMultipleSolutions(int[] puzzle) {
+    public PuzzleResult solvePuzzleAndCheckForMultipleSolutions(int[] puzzle) {
         int[] grid = Arrays.copyOf(puzzle, puzzle.length);
         PuzzleResult result = new PuzzleResult();
         solveWithUniqueCheck(grid, result);
@@ -90,12 +109,81 @@ public class Sudoku {
 
     }
 
+    /**
+     * Generates a sudoku puzzle from a given, fully solved grid.
+     * The generated puzzle has only one solution.
+     * @param grid a fully solved sudoku grid
+     * @return a puzzle with only one solution
+     */
+    public int[] generateValidLevel(int[] grid) {
 
-    private boolean solve(int[] grid) {
+        int[] mGrid = Arrays.copyOf(grid, grid.length);
+
+        ArrayList<Integer> visited = new ArrayList<>();
+
+        int zeros = 0;
+        while (zeros < 64 && visited.size() + zeros < mGrid.length ) {
+
+            int currentIdx = random.nextInt(mGrid.length);
+
+            int currentValue = mGrid[currentIdx];
+            if (visited.contains(currentIdx) || currentValue == 0)
+                continue;
+
+            mGrid[currentIdx] = 0;
+            PuzzleResult puzzleResult = solvePuzzleAndCheckForMultipleSolutions(mGrid);
+            if (!puzzleResult.hasSingleSolution()) {
+                mGrid[currentIdx] = currentValue;
+                visited.add(currentIdx);
+            } else
+                zeros++;
+
+        }
+
+        return mGrid;
+
+    }
+
+    /**
+     * Generates a sudoku puzzle from a given, fully solved grid.
+     * The generated puzzle has only one solution.
+     * Alternative to generateValidLevel, but slower;
+     * @param grid a fully solved sudoku grid
+     * @return a puzzle with only one solution
+     */
+    public int[] generateValidLevel2(int[] grid) {
+
+        int[] mGrid = Arrays.copyOf(grid, grid.length);
+
+        List<Integer> indices = IntStream.rangeClosed(0, 80).boxed().collect(Collectors.toList());
+        Collections.shuffle(indices);
+
+        boolean hasSingleSolution;
+
+        for (int currentIdx : indices) {
+
+            int currentValue = mGrid[currentIdx];
+
+            mGrid[currentIdx] = 0;
+
+            hasSingleSolution = checkForSingleSolution(mGrid);
+
+            if (!hasSingleSolution) {
+                mGrid[currentIdx] = currentValue;
+            }
+
+        }
+
+        return mGrid;
+
+    }
+
+
+    private boolean solveRandom(int[] puzzle) {
         
         int idx = 0;
-        while (grid[idx] != 0) {
-            if (++idx == grid.length)
+        while (puzzle[idx] != 0) {
+            if (++idx == puzzle.length)
                 return true;
         }
 
@@ -104,82 +192,82 @@ public class Sudoku {
         while (candidates.size() > 0) {
             int candidate = candidates.get(random.nextInt(candidates.size()));
             candidates.remove((Integer) candidate);
-            grid[idx] = candidate;
-            if (SudokuUtils.isValidNumber(idx, candidate, grid) && solve(grid)) {
+            puzzle[idx] = candidate;
+            if (SudokuUtils.isValidNumber(idx, candidate, puzzle) && solveRandom(puzzle)) {
                 return true;
             }
         }
 
-        grid[idx] = 0;
+        puzzle[idx] = 0;
         return false;
 
     }
 
-    private boolean solveOrdered(int[] grid, boolean invert) {
+    private boolean solveOrdered(int[] puzzle, boolean invert) {
 
         int idx = 0;
-        while (grid[idx] != 0) {
-            if (++idx == grid.length)
+        while (puzzle[idx] != 0) {
+            if (++idx == puzzle.length)
                 return true;
         }
 
-        ArrayList<Integer> candidates = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+        int candidate = (invert) ? 9 : 1;
 
-        while (candidates.size() > 0) {
-            int candidate = (invert) ? candidates.get(candidates.size()-1) : candidates.get(0);
-            candidates.remove((Integer) candidate);
-            grid[idx] = candidate;
-            if (SudokuUtils.isValidNumber(idx, candidate, grid) && solveOrdered(grid, invert)) {
+        while (candidate > 0 && candidate < 10) {
+
+            puzzle[idx] = candidate;
+            if (SudokuUtils.isValidNumber(idx, candidate, puzzle) && solveOrdered(puzzle, invert)) {
                 return true;
             }
+
+            candidate = (invert) ? candidate - 1 : candidate + 1;
+
         }
 
-        grid[idx] = 0;
+        puzzle[idx] = 0;
         return false;
 
     }
 
 
-    private boolean solveWithUniqueCheck(int[] grid, PuzzleResult result) {
+    private boolean solveWithUniqueCheck(int[] puzzle, PuzzleResult result) {
 
         int idx = 0;
-        while (grid[idx] != 0) {
-            if (++idx == grid.length) {
+        while (puzzle[idx] != 0) {
+            if (++idx == puzzle.length) {
                 result.timesSolved++;
                 break;
             }
         }
 
-        if (idx < grid.length) {
+        if (idx < puzzle.length) {
 
-            ArrayList<Integer> candidates = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9));
+            int candidate = 1;
 
-            while (candidates.size() > 0) {
-                int candidate = candidates.get(random.nextInt(candidates.size()));
-                candidates.remove((Integer) candidate);
-                grid[idx] = candidate;
-                if (SudokuUtils.isValidNumber(idx, candidate, grid) && solveWithUniqueCheck(grid, result)) {
+            while (candidate < 10) {
+                puzzle[idx] = candidate;
+                if (SudokuUtils.isValidNumber(idx, candidate, puzzle) && solveWithUniqueCheck(puzzle, result)) {
                     return true;
                 }
+
+                candidate++;
             }
 
-            grid[idx] = 0;
+            puzzle[idx] = 0;
             return false;
 
         } else {
 
             if (result.timesSolved == 1) {
-                result.firstResult = Arrays.copyOf(grid, grid.length);
+                result.firstResult = Arrays.copyOf(puzzle, puzzle.length);
                 return false;
             } else {
-                result.secondResult = grid;
+                result.secondResult = puzzle;
                 return true;
             }
 
 
         }
-
-
 
 
     }
