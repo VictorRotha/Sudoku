@@ -1,5 +1,9 @@
 package de.victor.sudoku;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 public class SudokuUtils {
 
 
@@ -99,6 +103,79 @@ public class SudokuUtils {
 
     }
 
+
+    public static List<Integer> getRowIndices(int idx) {
+
+        List<Integer> indices = new ArrayList<>();
+
+        int row = idx / 9;
+
+        for (int i = row * 9; i < row * 9 + 9; i++) {
+            indices.add(i);
+        }
+
+        return indices;
+
+    }
+
+    public static List<Integer> getColumnIndices(int idx) {
+        List<Integer> indices = new ArrayList<>();
+
+        int col = idx % 9;
+
+        for (int i = col; i < 81; i+=9) {
+            indices.add(i);
+        }
+
+        return indices;
+
+
+    }
+
+    public static List<Integer> getBoxIndices(int idx) {
+        int row = idx / 9;
+        int col = idx % 9;
+        int firstRow = row / 3 * 3;
+        int firstCol = col / 3 * 3;
+
+        ArrayList<Integer> indices = new ArrayList<>();
+
+        for (int r = firstRow; r < firstRow + 3; r++) {
+            for (int c = firstCol; c < firstCol + 3; c++) {
+                indices.add( r * 9 + c);
+            }
+        }
+        return indices;
+    }
+
+    public static List<Integer> getIndicesFromAbbr(String abbr) {
+
+        String message = abbr + " is not a valid abbreviation";
+
+        List<Integer> indices;
+        int n;
+        try {
+            n = Integer.parseInt(abbr.substring(1));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(message);
+        }
+
+        if (abbr.toLowerCase().startsWith("r"))
+            indices = SudokuUtils.getRowIndices(n * 9);
+        else if (abbr.toLowerCase().startsWith("c"))
+            indices = SudokuUtils.getColumnIndices(n);
+        else if (abbr.toLowerCase().startsWith("b")) {
+            int idx = n / 3 * 3 * 9 + (n % 3) * 3;
+            indices = SudokuUtils.getBoxIndices(idx);
+        }
+        else
+            throw new IllegalArgumentException(message);
+
+        return indices;
+    }
+
+
+
     public static void printSudoku(int[] grid) {
         printSudoku(grid, new int[81]);
     }
@@ -121,6 +198,24 @@ public class SudokuUtils {
 
         }
         System.out.println();
+
+    }
+
+    public static void printPencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers, boolean showSolved) {
+
+
+        if (markers == null)
+            return;
+
+        for (int i = 0; i < puzzle.length; i++) {
+            if (markers.containsKey(i))
+                System.out.printf("%2d : %s\n", i, markers.get(i));
+            else if (showSolved)
+                System.out.printf("%2d : %s\n", i, puzzle[i]);
+
+        }
+
+
 
     }
 }
