@@ -1,6 +1,7 @@
 package de.victor.sudoku;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Classifier {
 
@@ -16,16 +17,16 @@ public class Classifier {
     }
 
 
-    public void solve(Sudoku sudoku) {
+    public void solve() {
 
 
         int[] mPuzzle = puzzle.puzzle;
-        HashMap<Integer, List<Integer>> markers = null;
+        HashMap<Integer, List<Integer>> markers = updatePencilMarks(mPuzzle, null);
 
         boolean isSolved = false;
         boolean isSolvable = true;
         int difficulty = 0;
-        int maxDifficulty = 7;
+        int maxDifficulty = 8;
         int addedNumbersInStreak = 0;
         int [] solvedByDifficulty = new int[maxDifficulty + 1];
 
@@ -41,47 +42,40 @@ public class Classifier {
 
                 case 0:
                     addedNumbersInStreak = 0;
-
-                    addedNumbers = soleCandidates(mPuzzle);
+                    addedNumbers = collapsePencilMarks(puzzle.puzzle, markers);
+//                    addedNumbers = soleCandidates(mPuzzle);
 
                     break;
                 case 1:
 
                     addedNumbers = uniqueCandidates(mPuzzle);
+                    updatePencilMarks(puzzle.puzzle, markers);
+
                     break;
 
                 case 2:
-                    if (markers == null)
-                        markers = generatePencilMarks(mPuzzle);
                     addedNumbers = candidateLines(mPuzzle, markers);
                     break;
 
                 case 3:
-                    if (markers == null)
-                        markers = generatePencilMarks(mPuzzle);
                     addedNumbers = doublePairs(mPuzzle, markers);
                     break;
 
                 case 4:
-                    if (markers == null)
-                        markers = generatePencilMarks(mPuzzle);
                     addedNumbers = nakedDoubles(mPuzzle, markers);
                     break;
                 case 5:
-                    if (markers == null)
-                        markers = generatePencilMarks(mPuzzle);
                     addedNumbers = hiddenDoubles(mPuzzle, markers);
                     break;
 
                 case 6:
-                    if (markers == null)
-                        markers = generatePencilMarks(mPuzzle);
                     addedNumbers = nakedTriples(mPuzzle, markers);
                     break;
                 case 7:
-                    if (markers == null)
-                        markers = generatePencilMarks(mPuzzle);
                     addedNumbers = hiddenTriples(mPuzzle, markers);
+                    break;
+                case 8:
+                    addedNumbers = XWings(mPuzzle, markers);
                     break;
             }
 
@@ -126,10 +120,8 @@ public class Classifier {
 
             }
 
-
             System.out.printf("isSolved %s, isSolvable %s, addedNumbers %s, addedNumbersInStreak %s\ndifficulty set to %s \n",
                     isSolved, isSolvable, addedNumbers, addedNumbersInStreak, difficulty);
-
 
         }
 
@@ -141,32 +133,12 @@ public class Classifier {
     }
 
 
-    private int soleCandidates(int[] puzzle) {
 
-        int addedTotal = 0;
-
-        int numbersAdded = 1;
-        while (numbersAdded > 0) {
-            numbersAdded = 0;
-            for (int i = 0; i < 81; i++) {
-                if (puzzle[i] != 0)
-                    continue;
-
-                List<Integer> candidates = eliminateNeighboursFromIdx(puzzle, i);
-                if (candidates.size() == 1) {
-                    System.out.println("--> sole candidates idx " + i + " set to " + candidates.get(0));
-                    numbersAdded++;
-                    puzzle[i] = candidates.get(0);
-                }
-            }
-
-            addedTotal += numbersAdded;
-
-        }
-
-        return addedTotal;
-    }
-
+    /**
+     * finds candidates that appears only once in row, column or box
+     * @param puzzle sudoku puzzle as int[]
+     * @return number of solved cells
+     */
     protected int uniqueCandidates(int[] puzzle) {
 
         int addedNumbers = 1;
@@ -190,37 +162,22 @@ public class Classifier {
         int addedNumbers = 0;
 
         for (int row = 0; row < 9; row ++) {
-
-            ArrayList<Integer> cells = new ArrayList<>();
-            for (int i = row * 9; i < (row+1) * 9;  i ++ ) {
-                cells.add(i);
-            }
+            var cells = SudokuUtils.getRowIndices(row * 9);
             addedNumbers += findUniqueCandidates(puzzle, cells);
         }
 
 
         for (int col = 0; col < 9; col++) {
-            ArrayList<Integer> cells = new ArrayList<>();
-            for (int i = col; i < 81; i += 9) {
-                cells.add(i);
-            }
+            var cells = SudokuUtils.getColumnIndices(col);
             addedNumbers += findUniqueCandidates(puzzle, cells);
 
         }
 
-
         for (int row = 0; row < 9; row+=3) {
             for (int col = 0; col < 9; col+=3) {
-                ArrayList<Integer> cells = new ArrayList<>();
-                for (int i = col; i < col + 3; i++) {
-                    for (int j = row; j < row + 3; j++) {
-                        cells.add(j * 9 + i);
-                    }
-                }
+                List<Integer> cells = SudokuUtils.getBoxIndices(row * 9 + col);
                 addedNumbers += findUniqueCandidates(puzzle, cells);
-
             }
-
         }
 
         return addedNumbers;
@@ -239,7 +196,7 @@ public class Classifier {
             if (indicesByNumbers.get(number).size() == 1) {
                 int idx = indicesByNumbers.get(number).get(0);
                 puzzle[idx] = number;
-                System.out.println("--> unique number idx " + idx  + " set to " + number);
+                System.out.println("--> unique number set idx " + idx  + " to " + number);
                 addedNumbers++;
             }
         }
@@ -250,9 +207,15 @@ public class Classifier {
 
     }
 
-
+    /**
+     *
+     * eliminate and collapse pencilmarks
+     *
+     * @param puzzle sudoku puzzle as int[]
+     * @param markers pencilmarks
+     * @return number of collapsed sudoku cells
+     */
     public int candidateLines(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
-        System.out.println("candidate lines");
         if (markers == null) {
             throw new IllegalArgumentException("markers can not be be null");
         }
@@ -266,14 +229,8 @@ public class Classifier {
 
             for (int box = 0; box < 9; box++) {
 
-                System.out.println("box " + box);
-
                 List<Integer> boxIndices = SudokuUtils.getIndicesFromAbbr("b" + box);
                 HashMap<Integer, List<Integer>> indicesByNumber = getIndicesByNumber(boxIndices, markers);
-
-                System.out.println("boxIndices " + boxIndices);
-
-                System.out.println("IndisByNumbers " + indicesByNumber);
 
                 for (int number : indicesByNumber.keySet()) {
                     List<Integer> indices = indicesByNumber.get(number);
@@ -281,8 +238,6 @@ public class Classifier {
                     List<Integer> eliminateFrom = null;
 
                     int range = Collections.max(indices) - Collections.min(indices);
-
-                    System.out.println(number + " range " + range + " " + indices);
 
                     if (range <= 2)
                         eliminateFrom = SudokuUtils.getRowIndices(indices.get(0));
@@ -292,16 +247,13 @@ public class Classifier {
 
 
                     if (eliminateFrom != null) {
-                        System.out.println(number + " eli from " + eliminateFrom);
                         eliminateFrom.removeAll(indices);
                         if (!eliminateFrom.isEmpty() && eliminateCandidateFromPositions(markers, number, eliminateFrom)) {
                             removedMarkers = true;
-                            System.out.println("removed markers, from " + eliminateFrom);
                             addedNumbers = collapsePencilMarks(puzzle, markers);
                             if (addedNumbers > 0) {
                                 return addedNumbers;
                             }
-
 
                         }
                     }
@@ -316,7 +268,13 @@ public class Classifier {
 
     }
 
-
+    /**
+     * removes and collapse pencilmarks
+     *
+     * @param puzzle sudoku puzzle
+     * @param markers pencilmarks
+     * @return number of collapsed cells
+     */
     public int doublePairs(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
 
         removeDoublePairsFromMarkers(markers);
@@ -354,7 +312,7 @@ public class Classifier {
                     HashMap<Integer, HashSet<Integer>> otherLines = linesByNumbers.get(j);
 
                     for (int n: currentLines.keySet()) {
-                        if (!areDoublesInLines(currentLines.get(n), otherLines.get(n)))
+                        if (doublesAreNotInLines(currentLines.get(n), otherLines.get(n)))
                             continue;
 
                         List<Integer> indices = new ArrayList<>();
@@ -406,7 +364,7 @@ public class Classifier {
 
                     for (int n: currentLines.keySet()) {
 
-                        if (!areDoublesInLines(currentLines.get(n), otherLines.get(n)))
+                        if (doublesAreNotInLines(currentLines.get(n), otherLines.get(n)))
                             continue;
 
                         List<Integer> indices = new ArrayList<>();
@@ -435,6 +393,17 @@ public class Classifier {
     }
 
 
+    /**
+     * Searching for cells, that contains only the same two numbers.
+     * If both cells in the same row, removes the numbers from the other cells in the row.<br/>
+     * If both cells in the same column, removes the numbers from the other cells in the column.<br/>
+     * If both cells in the same box, removes the numbers from the other cells in the box.<br/>
+     * Collapsing cells.
+     *
+     * @param puzzle sudoku puzzle
+     * @param markers pencilmarks
+     * @return number added after collapsing
+     */
     public int nakedDoubles(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
 
         List<String> queue = new ArrayList<>(Arrays.asList(
@@ -492,27 +461,37 @@ public class Classifier {
     }
 
 
+    /**
+     * Searches for a pair of cells, that contains only the same two numbers.
+     * Removes the numbers from the other cells and write to pencilmarks
+     *
+     * @param indices cells to look in
+     * @param markers pencilmarks
+     * @return int[] of indices, from which a number is being removed
+     */
     public Integer[] findNakedDoubles(List<Integer> indices, HashMap<Integer, List<Integer>> markers) {
+        System.out.println("find naked doubles in " + indices);
 
+        //get mutable subset of markers
         HashMap<Integer, List<Integer>> map = new HashMap<>();
         for (Integer idx: indices) {
             if (markers.containsKey(idx))
                 map.put(idx, new ArrayList<>(markers.get(idx)));
         }
 
-        HashMap<Integer, List<Integer>> newMap = findDoublesInMap(map);
+        HashMap<Integer, List<Integer>> newMap = findDoublesInSubMap(map);
 
+        //compare
         List<Integer> removedFrom = new ArrayList<>();
         for (int idx : map.keySet()) {
             if (map.get(idx).size() > newMap.get(idx).size()) {
                 removedFrom.add(idx);
                 markers.put(idx, newMap.get(idx));
             }
-
         }
 
-        if (removedFrom.size() > 0)
-            System.out.println("removed markers from " + removedFrom);
+        if (!removedFrom.isEmpty())
+            System.out.println("find naked doubles removed markers from " + removedFrom);
 
         Integer[] result = new Integer[removedFrom.size()];
         removedFrom.toArray(result);
@@ -583,7 +562,7 @@ public class Classifier {
 
         HashMap<Integer, List<Integer>> indicesByNumbers = getIndicesByNumber(indices, markers);
 
-        HashMap<Integer, List<Integer>> newIndisByNumbers = findDoublesInMap(indicesByNumbers);
+        HashMap<Integer, List<Integer>> newIndisByNumbers = findDoublesInSubMap(indicesByNumbers);
 
         HashMap<Integer, List<Integer>> newMap = new HashMap<>();
 
@@ -603,7 +582,7 @@ public class Classifier {
             }
         }
 
-        if (removedFrom.size() > 0)
+        if (!removedFrom.isEmpty())
             System.out.println("removed markers from " + removedFrom);
 
         Integer[] result = new Integer[removedFrom.size()];
@@ -692,7 +671,7 @@ public class Classifier {
 
         }
 
-        if (removedFrom.size() > 0)
+        if (!removedFrom.isEmpty())
             System.out.println("removed markers from " + removedFrom);
 
         Integer[] result = new Integer[removedFrom.size()];
@@ -727,7 +706,7 @@ public class Classifier {
             }
         }
 
-        if (removedFrom.size() > 0)
+        if (!removedFrom.isEmpty())
             System.out.println("removed markers from " + removedFrom);
 
         Integer[] result = new Integer[removedFrom.size()];
@@ -894,14 +873,17 @@ public class Classifier {
         return result;
     }
 
-
-
-
-
-
-
-
-    public HashMap<Integer, List<Integer>> findDoublesInMap(HashMap<Integer, List<Integer>> subMap) {
+    /**
+     *
+     * Searching for cells in a given part of pencilmarks, that contains only the same two numbers.
+     * Removes these numbers from the other cells and repeat until no marker can be removed.<br/>
+     * example: {1:[1,2], 2:[1,3,4], 3:[1,2]} -> {1:[1,2], 2:[3,4], 3:[1,2]}<br/>
+     * example: {1:[1,2], 2:[1,2,3], 3:[1,2]} -> {1:[1,2], 2:[3], 3:[1,2]}
+     *
+     * @param subMap sub map of pencilmarks
+     * @return an altered version of the subMap
+     */
+    public HashMap<Integer, List<Integer>> findDoublesInSubMap(HashMap<Integer, List<Integer>> subMap) {
         List<Integer> candidates = new ArrayList<>(subMap.keySet());
         HashMap<Integer, List<Integer>> resultMap = new HashMap<>();
         for (Integer idx : subMap.keySet())
@@ -918,58 +900,191 @@ public class Classifier {
 
             for (int i = 0; i < candidates.size() - 1; i++) {
 
-
                 int c1 = candidates.get(i);
 
                 if (foundTotal.contains(c1))
                     continue;
 
-                if (resultMap.get(c1).size() > 2)
+                if (resultMap.get(c1).size() != 2)
                     continue;
 
                 for (int j = i + 1; j < candidates.size(); j++) {
                     int c2 = candidates.get(j);
                     if (foundTotal.contains(c2))
                         continue;
-                    if (resultMap.get(c2).size() > 2)
+                    if (resultMap.get(c2).size() != 2)
                         continue;
                     values = new HashSet<>(resultMap.get(c1));
                     values.addAll(resultMap.get(c2));
                     if (values.size() > 2)
                         continue;
 
-                        System.out.printf("Double found for candidates %s and %s; values %s\n", c1, c2, values);
+                    System.out.printf("Double found for candidates %s and %s; values %s\n", c1, c2, values);
 
-                        List<Integer> foundCandidates = new ArrayList<>(Arrays.asList(c1, c2));
-                        foundTotal.addAll(foundCandidates);
+                    List<Integer> foundCandidates = new ArrayList<>(Arrays.asList(c1, c2));
+                    foundTotal.addAll(foundCandidates);
 
-                        for (int idx: resultMap.keySet()) {
-                            if (!foundCandidates.contains(idx))
-                                if (resultMap.get(idx).removeAll(values)) {
-                                    success = true;
-                                }
-                        }
-
-                        if (success) {
-                            System.out.println("Doubles: success " + resultMap);
-                        }
-
+                    for (int idx: resultMap.keySet()) {
+                        if (!foundCandidates.contains(idx))
+                            if (resultMap.get(idx).removeAll(values)) {
+                                success = true;
+                            }
                     }
                 }
             }
-
+        }
 
         return resultMap;
 
     }
 
 
+    protected int XWings(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
+
+        var altered = xWingRemoveMarkers(markers);
+
+        var rotatedMarkers = rotatePencilmarksRight(markers);
+        altered = (altered) ? altered :  xWingRemoveMarkers(rotatedMarkers);
+        rotatedMarkers = rotatePencilmarksLeft(rotatedMarkers);
+
+        System.out.println("XWing markers removed " + altered);
+
+        for (int i : markers.keySet())
+            markers.put(i, rotatedMarkers.get(i));
+
+        return collapsePencilMarks(puzzle, markers);
 
 
+    }
+
+    /**
+     * Looks for XWings and removes markers from pencilmarks
+     * @param markers pencilmarks
+     * @return true if markers altered, else false
+     */
+    boolean xWingRemoveMarkers(HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, HashMap<Integer, List<Integer>>> doubles = findCandidatePairInRow(markers);
+        return xWingCompareRows(doubles, markers);
+
+    }
+
+    /**
+     * Compares rows and looks for candidates in different rows but same columns.
+     * If found, the candidate will be removed from other pencilmark rows in both columns
+     *
+     * @param doubles {row={candidate=(col1, col2}}
+     * @param markers pencilmarks
+     * @return true if any candidate was removed, else false
+     */
+    protected boolean xWingCompareRows(HashMap<Integer, HashMap<Integer, List<Integer>>> doubles, HashMap<Integer, List<Integer>> markers) {
+
+        boolean removed = false;
+        for (int row = 0; row < 8; row++) {
+            if (!doubles.containsKey(row))
+                continue;
+            for (int n : doubles.get(row).keySet()) {
+                for (int row2 = row + 1; row2 < 9; row2++) {
+                    if (!doubles.containsKey(row2))
+                        continue;
+                    if (!doubles.get(row2).containsKey(n))
+                        continue;
+                    if (doubles.get(row2).get(n).equals(doubles.get(row).get(n))) {
+
+                        var cols = doubles.get(row).get(n);
+                        var indices = SudokuUtils.getColumnIndices(doubles.get(row).get(n).get(0));
+                        indices.addAll(SudokuUtils.getColumnIndices(doubles.get(row).get(n).get(1)));
+
+                        indices.removeAll(SudokuUtils.getRowIndices(row * 9 + cols.get(0)));
+                        indices.removeAll(SudokuUtils.getRowIndices(row2 * 9 + cols.get(0)));
+
+                        if ( eliminateCandidateFromPositions(markers, n, indices))
+                            removed = true;
+
+                    }
+                }
+            }
+        }
+        return removed;
+    }
+
+    /**
+     * Searches for candidates, who only occurs twice in a row.
+     * Returns the columns who contains the candidate, mapped to the candidate, mapped to the row.<br/>
+     * example output:<br/>
+     * {<br/>
+     * 1 = {7 = (1, 3), 8 = (4, 5)},<br/>
+     * 3 = {7 = (1, 3)},<br/>
+     * }<br/>
+     * candidate 7 in row 1 lies only in column 1 and 3<br/>
+     * candidate 8 in row 1 lies only in column 4 and 5<br/>
+     * candidate 7 in row 2 lies only in column 1 and 3<br/>
+     *
+     *
+     *
+     * @param markers pencilmarks
+     * @return map of row -> map of candidate -> list of (col1, col2)
+     */
+    protected HashMap<Integer, HashMap<Integer, List<Integer>>> findCandidatePairInRow(HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, HashMap<Integer, List<Integer>>> doubles = new HashMap<>();
+        // get columns that contains the only two n in row
+        for (int row = 0; row < 9; row++) {
+            var indices = SudokuUtils.getRowIndices(row * 9);
+            var indicesByNumber = getIndicesByNumber(indices, markers);
+            if (indicesByNumber.isEmpty())
+                continue;
+            for (int n : indicesByNumber.keySet()) {
+                if (indicesByNumber.get(n).size() != 2)
+                    continue;
+                doubles.computeIfAbsent(row, k -> new HashMap<>());
+                var cols = indicesByNumber.get(n).stream().map(i -> i % 9).collect(Collectors.toList());
+                doubles.get(row).put(n, cols);
+            }
+        }
+
+//        for (int row : doubles.keySet())
+//            System.out.println(row + " " + doubles.get(row));
+
+        return doubles;
+    }
 
 
+    /**
+     * rotates the pencilmark grid 90° to the right, so rows 0 to 8 becomes columns 8 to 0
+     * and columns 0 to 8 becomes rows 0 to 8
+     *
+     * @param markers rotated instance of pencilmarks
+     */
+    protected HashMap<Integer, List<Integer>> rotatePencilmarksRight(HashMap<Integer, List<Integer>> markers) {
 
+    HashMap<Integer, List<Integer>> rotated = new HashMap<>();
 
+    for (int i : markers.keySet()) {
+        int j = (i % 9) * 9 + 8 - (i/9);
+        rotated.put(j, markers.get(i));
+    }
+
+    return rotated;
+    }
+
+    /**
+     * rotates the pencilmark grid 90° to the left, so rows 0 to 8 becomes columns 0 to 8
+     * and columns 0 to 8 becomes rows 8 to 0
+     *
+     * @param markers rotated instance of pencilmarks
+     */
+    protected HashMap<Integer, List<Integer>> rotatePencilmarksLeft(HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, List<Integer>> rotated = new HashMap<>();
+
+        for (int i : markers.keySet()) {
+            int j = (8 - (i % 9)) * 9 + (i / 9);
+            rotated.put(j, markers.get(i));
+        }
+
+        return rotated;
+    }
 
 
 
@@ -1011,21 +1126,26 @@ public class Classifier {
 
     }
 
-    protected boolean areDoublesInLines(HashSet<Integer> lines1, HashSet<Integer> lines2) {
+    protected boolean doublesAreNotInLines(HashSet<Integer> lines1, HashSet<Integer> lines2) {
 
 //        System.out.println("compare lines1" + lines1 + " lines2 " + lines2);
         if (lines1 == null || lines2 == null ||lines1.size() > 2 || lines2.size() > 2 || lines1.isEmpty() || lines2.isEmpty())
-            return false;
+            return true;
 
         HashSet<Integer> allColumns = new HashSet<>(lines1);
         allColumns.addAll(lines2);
-        return allColumns.size() == 2;
+        return allColumns.size() != 2;
 
     }
 
 
-
-
+    /** Searches the pencilmarks for single entries and writes them to the puzzle. Collapsed entries were deleted from markers.
+     * After that the markers are updated and the procedure repeats until no cell can be collapsed anymore.
+     *
+     * @param puzzle sudoku puzzle as int[]
+     * @param markers pencilmarks
+     * @return number of collapsed cells
+     */
     protected int collapsePencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
         int addedNumbers = 0;
 
@@ -1054,23 +1174,33 @@ public class Classifier {
         return addedNumbers;
     }
 
-    protected HashMap<Integer, List<Integer>> generatePencilMarks(int[] puzzle) {
 
-        HashMap<Integer, List<Integer>> markers = new HashMap<>();
+    protected HashMap<Integer, List<Integer>> updatePencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
+
+        if (markers == null)
+            markers = new HashMap<>();
 
         for (int i = 0; i < puzzle.length; i++) {
             if (puzzle[i] == 0) {
-                List<Integer> candidates = eliminateNeighboursFromIdx(puzzle, i);
+                List<Integer> candidates = eliminateNeighboursFromIdx(puzzle, i, markers);
                 markers.put(i, candidates);
+            } else if (markers.get(i) != null) {
+                markers.remove(i);
             }
 
         }
 
-        SudokuUtils.printPencilMarks(puzzle, markers, false);
-
         return markers;
 
     }
+
+    //TODO: deprecated, use updatePencilMarks(puzzle, null) in Tests
+    protected HashMap<Integer, List<Integer>> generatePencilMarks(int[] puzzle) {
+
+        return updatePencilMarks(puzzle, null);
+
+    }
+
 
     protected void eliminateNeighbourCandidates(int[] puzzle, HashMap<Integer, List<Integer>> markers, int idx) {
 
@@ -1084,6 +1214,14 @@ public class Classifier {
 
     }
 
+    /**
+     * removes a candidate from all cells in pencilmarks specified in positions.
+     *
+     * @param markers pencilmarks
+     * @param candidate candidate to remove from markers
+     * @param positions indices whe candidate should be removed
+     * @return true if candidate was removed at least once, else false
+     */
     protected boolean eliminateCandidateFromPositions(HashMap<Integer, List<Integer>> markers, int candidate, List<Integer> positions) {
 
         boolean removed = false;
@@ -1152,33 +1290,44 @@ public class Classifier {
     }
 
 
+    protected List<Integer> eliminateNeighboursFromIdx(int[] puzzle, int idx, HashMap<Integer, List<Integer>> markers) {
+
+        ArrayList<Integer> candidates;
+
+        if (markers == null || (markers.get(idx) == null && puzzle[idx] == 0))
+            candidates = new ArrayList<>(Arrays.asList(1,2,3,4,5,6,7,8,9));
+        else
+            candidates = new ArrayList<>(markers.get(idx));
+
+        int row = idx / 9;
+        int col = idx % 9;
+
+        for (int c = row * 9; c < (row+1) * 9; c++) {
+            candidates.remove((Integer) puzzle[c]);
+        }
+
+        for (int c = col; c < puzzle.length; c += 9) {
+            candidates.remove((Integer) puzzle[c]);
+        }
+
+        int firstRow = row / 3 * 3;
+        int firstCol = col / 3 * 3;
+
+        for (int r = firstRow; r < firstRow + 3; r++) {
+            for (int c = firstCol; c < firstCol + 3; c++) {
+                int currentIdx = r * 9 + c;;
+                candidates.remove((Integer) puzzle[currentIdx]);
+            }
+        }
+
+        return candidates;
+
+    }
+
+
     protected List<Integer> eliminateNeighboursFromIdx(int[] puzzle, int idx) {
 
-            ArrayList<Integer> candidates = new ArrayList<>(Arrays.asList(1,2,3,4,5,6,7,8,9));
-
-            int row = idx / 9;
-            int col = idx % 9;
-
-            for (int c = row * 9; c < (row+1) * 9; c++) {
-                candidates.remove((Integer) puzzle[c]);
-            }
-
-            for (int c = col; c < puzzle.length; c += 9) {
-                candidates.remove((Integer) puzzle[c]);
-            }
-
-            int firstRow = row / 3 * 3;
-            int firstCol = col / 3 * 3;
-
-            for (int r = firstRow; r < firstRow + 3; r++) {
-                for (int c = firstCol; c < firstCol + 3; c++) {
-                    int currentIdx = r * 9 + c;
-                    candidates.remove((Integer) puzzle[currentIdx]);
-                }
-            }
-
-            return candidates;
-
+           return eliminateNeighboursFromIdx(puzzle, idx, null);
     }
 
 

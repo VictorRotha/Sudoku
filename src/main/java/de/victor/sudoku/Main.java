@@ -81,7 +81,7 @@ public class Main {
 
 //        classifier.candidateLines(puzzle, null);
 
-        classifier.solve(sudoku);
+        classifier.solve();
 //
 ////        classifier.candidateLines(puzzle, null);
 

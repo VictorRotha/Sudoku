@@ -175,7 +175,6 @@ public class SudokuUtils {
     }
 
 
-
     public static void printSudoku(int[] grid) {
         printSudoku(grid, new int[81]);
     }
@@ -203,9 +202,13 @@ public class SudokuUtils {
 
     public static void printPencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers, boolean showSolved) {
 
-
-        if (markers == null)
+        if (markers == null) {
+            System.err.println("markers are null");
             return;
+        }
+
+        if (puzzle == null)
+            puzzle = new int[81];
 
         for (int i = 0; i < puzzle.length; i++) {
             if (markers.containsKey(i))
