@@ -26,7 +26,7 @@ public class Classifier {
         boolean isSolved = false;
         boolean isSolvable = true;
         int difficulty = 0;
-        int maxDifficulty = 8;
+        int maxDifficulty = 9;
         int addedNumbersInStreak = 0;
         int [] solvedByDifficulty = new int[maxDifficulty + 1];
 
@@ -76,6 +76,10 @@ public class Classifier {
                     break;
                 case 8:
                     addedNumbers = XWings(mPuzzle, markers);
+                    break;
+
+                case 9:
+                    addedNumbers = swordfish(mPuzzle, markers);
                     break;
             }
 
@@ -939,6 +943,83 @@ public class Classifier {
     }
 
 
+    protected int swordfish(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
+
+        var altered = swordfishRemoveMarkers(markers);
+
+        var rotatedMarkers = rotatePencilmarksRight(markers);
+        altered = (altered) ? altered :  swordfishRemoveMarkers(rotatedMarkers);
+        rotatedMarkers = rotatePencilmarksLeft(rotatedMarkers);
+
+        for (int i : markers.keySet())
+            markers.put(i, rotatedMarkers.get(i));
+
+        return collapsePencilMarks(puzzle, markers);
+
+
+    }
+
+    /**
+     * Looks for SwordFish and removes markers from pencilmarks
+     * @param markers pencilmarks
+     * @return true if markers altered, else false
+     */
+    boolean swordfishRemoveMarkers(HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, HashMap<Integer, List<Integer>>> doubles = findCandidatePairInRow(markers);
+        return swordfishCompareRows(doubles, markers);
+
+    }
+
+    /**
+     * Compares rows and looks for candidate pairs in three different rows with three overlapping columns.
+     * If found, the candidate will be removed from other pencilmark rows in all three columns
+     *
+     * @param doubles {row={candidate=(col1, col2}}
+     * @param markers pencilmarks
+     * @return true if any candidate was removed, else false
+     */
+    protected boolean swordfishCompareRows(HashMap<Integer, HashMap<Integer, List<Integer>>> doubles, HashMap<Integer, List<Integer>> markers) {
+        boolean removed = false;
+        for (int row = 0; row < 7; row++) {
+            if (!doubles.containsKey(row))
+                continue;
+            for (int n : doubles.get(row).keySet()) {
+                for (int row2 = row + 1; row2 < 8; row2++) {
+                    if (!doubles.containsKey(row2) || !doubles.get(row2).containsKey(n))
+                        continue;
+
+                    var total = new HashSet<>(doubles.get(row).get(n));
+                    total.addAll(doubles.get(row2).get(n));
+                    if (total.size() == 3) {
+                        //overlapp 2 rows
+                        for (int row3 = row2 + 1; row3 < 9; row3++) {
+                            if (!doubles.containsKey(row3) || !doubles.get(row3).containsKey(n))
+                                continue;
+                            if (total.contains(doubles.get(row3).get(n).get(0)) && total.contains(doubles.get(row3).get(n).get(1))) {
+
+                                var indices = new ArrayList<Integer>();
+                                for (int col : total)
+                                    indices.addAll(SudokuUtils.getColumnIndices(col));
+
+                                indices.removeAll(SudokuUtils.getRowIndices(row * 9));
+                                indices.removeAll(SudokuUtils.getRowIndices(row2 * 9 ));
+                                indices.removeAll(SudokuUtils.getRowIndices(row3 * 9 ));
+
+                                if (eliminateCandidateFromPositions(markers, n, indices))
+                                    removed = true;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        return removed;
+    }
+
+
     protected int XWings(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
 
         var altered = xWingRemoveMarkers(markers);
@@ -1175,6 +1256,7 @@ public class Classifier {
     }
 
 
+
     protected HashMap<Integer, List<Integer>> updatePencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
 
         if (markers == null)
@@ -1191,13 +1273,6 @@ public class Classifier {
         }
 
         return markers;
-
-    }
-
-    //TODO: deprecated, use updatePencilMarks(puzzle, null) in Tests
-    protected HashMap<Integer, List<Integer>> generatePencilMarks(int[] puzzle) {
-
-        return updatePencilMarks(puzzle, null);
 
     }
 
