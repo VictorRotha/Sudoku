@@ -1,4 +1,7 @@
-package de.victor.sudoku;
+package de.victor.sudoku.classifier;
+
+import de.victor.sudoku.Puzzle;
+import de.victor.sudoku.SudokuUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1257,7 +1260,7 @@ public class Classifier {
 
 
 
-    protected HashMap<Integer, List<Integer>> updatePencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
+    public HashMap<Integer, List<Integer>> updatePencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
 
         if (markers == null)
             markers = new HashMap<>();
@@ -1289,6 +1292,7 @@ public class Classifier {
 
     }
 
+    //TODO utility class
     /**
      * removes a candidate from all cells in pencilmarks specified in positions.
      *
@@ -1310,6 +1314,8 @@ public class Classifier {
 
     }
 
+
+    //TODO deprecated
     protected List<Integer> findNeighbourPositions(int idx) {
 
         HashSet<Integer> neighbours = new HashSet<>();
@@ -1398,6 +1404,7 @@ public class Classifier {
         return candidates;
 
     }
+
 
 
     protected List<Integer> eliminateNeighboursFromIdx(int[] puzzle, int idx) {

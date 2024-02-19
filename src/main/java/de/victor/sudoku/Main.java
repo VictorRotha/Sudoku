@@ -1,6 +1,8 @@
 package de.victor.sudoku;
 
 
+import de.victor.sudoku.classifier.Classifier;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

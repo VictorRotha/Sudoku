@@ -1,8 +1,8 @@
 package de.victor.sudoku;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import de.victor.sudoku.classifier.SolvingResult;
+
+import java.util.*;
 
 public class SudokuUtils {
 
@@ -148,6 +148,20 @@ public class SudokuUtils {
         return indices;
     }
 
+    public static List<Integer> getNeighbourPositions(int idx) {
+
+        HashSet<Integer> neighbours = new HashSet<>();
+
+        neighbours.addAll(SudokuUtils.getBoxIndices(idx));
+        neighbours.addAll(SudokuUtils.getRowIndices(idx));
+        neighbours.addAll(SudokuUtils.getColumnIndices(idx));
+
+//        System.out.println(" idx " + idx + " neighbours " + neighbours);
+
+        return new ArrayList<>(neighbours);
+
+    }
+
     public static List<Integer> getIndicesFromAbbr(String abbr) {
 
         String message = abbr + " is not a valid abbreviation";
@@ -173,6 +187,84 @@ public class SudokuUtils {
 
         return indices;
     }
+
+
+
+    /**
+     * removes a candidate from all cells in pencilmarks specified in positions.
+     *
+     * @param markers pencilmarks
+     * @param candidate candidate to remove from markers
+     * @param positions indices whe candidate should be removed
+     * @return true if a candidate was removed at least once, else false
+     */
+    public static boolean eliminateCandidateFromPositions(HashMap<Integer, List<Integer>> markers, int candidate, List<Integer> positions) {
+
+        boolean removed = false;
+        for (Integer pos : positions) {
+            if (markers.containsKey(pos) && markers.get(pos).remove((Integer) candidate)) {
+                removed = true;
+            }
+        }
+
+        return removed;
+
+    }
+
+    public static HashMap<Integer, List<Integer>> updatePencilMarks(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
+
+        if (markers == null)
+            markers = new HashMap<>();
+
+        for (int i = 0; i < puzzle.length; i++) {
+            if (puzzle[i] == 0) {
+                List<Integer> candidates = eliminateNeighboursFromIdx(puzzle, i, markers);
+                markers.put(i, candidates);
+            } else if (markers.get(i) != null) {
+                markers.remove(i);
+            }
+
+        }
+
+        return markers;
+
+    }
+
+
+    public static List<Integer> eliminateNeighboursFromIdx(int[] puzzle, int idx, HashMap<Integer, List<Integer>> markers) {
+
+        ArrayList<Integer> candidates;
+
+        if (markers == null || (markers.get(idx) == null && puzzle[idx] == 0))
+            candidates = new ArrayList<>(Arrays.asList(1,2,3,4,5,6,7,8,9));
+        else
+            candidates = new ArrayList<>(markers.get(idx));
+
+        int row = idx / 9;
+        int col = idx % 9;
+
+        for (int c = row * 9; c < (row+1) * 9; c++) {
+            candidates.remove((Integer) puzzle[c]);
+        }
+
+        for (int c = col; c < puzzle.length; c += 9) {
+            candidates.remove((Integer) puzzle[c]);
+        }
+
+        int firstRow = row / 3 * 3;
+        int firstCol = col / 3 * 3;
+
+        for (int r = firstRow; r < firstRow + 3; r++) {
+            for (int c = firstCol; c < firstCol + 3; c++) {
+                int currentIdx = r * 9 + c;;
+                candidates.remove((Integer) puzzle[currentIdx]);
+            }
+        }
+
+        return candidates;
+
+    }
+
 
 
     public static void printSudoku(int[] grid) {
