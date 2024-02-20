@@ -15,7 +15,7 @@ public class CollapsePencilMarks implements SolvingTechnique {
  *
  * @param puzzle sudoku puzzle as int[]
  * @param markers pencilmarks
- * @return true if pencilmarks altered else false
+ * @return SolvingResult
  */
     @Override
     public SolvingResult execute(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
@@ -49,7 +49,7 @@ public class CollapsePencilMarks implements SolvingTechnique {
                 puzzle,
                 markers,
                 addedNumbers,
-                true
+                addedNumbers > 0
         );
     }
 

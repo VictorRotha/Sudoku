@@ -3,6 +3,7 @@ package de.victor.sudoku;
 import de.victor.sudoku.classifier.SolvingResult;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SudokuUtils {
 
@@ -202,7 +203,8 @@ public class SudokuUtils {
 
         boolean removed = false;
         for (Integer pos : positions) {
-            if (markers.containsKey(pos) && markers.get(pos).remove((Integer) candidate)) {
+            if (markers.containsKey(pos) && markers.get(pos).contains(candidate)) {
+                markers.put(pos, markers.get(pos).stream().filter(n -> n != candidate).collect(Collectors.toList()));
                 removed = true;
             }
         }
