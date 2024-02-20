@@ -1,13 +1,13 @@
-package de.victor.sudoku.classifier;
+package de.victor.sudoku.classifier.solvingtechs;
 
 import de.victor.sudoku.SudokuUtils;
+import de.victor.sudoku.classifier.SolvingResult;
+import de.victor.sudoku.classifier.SolvingTechnique;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
-public class CollapsePencilMarks implements SolvingTechnique{
+public class CollapsePencilMarks implements SolvingTechnique {
 
 
  /** Searches the pencilmarks for single entries and writes them to the puzzle. Collapsed entries were deleted from markers.

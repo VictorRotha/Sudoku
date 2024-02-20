@@ -313,4 +313,23 @@ public class SudokuUtils {
 
 
     }
+
+    public static HashMap<Integer, List<Integer>> getIndicesByNumber(List<Integer> indices, HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, List<Integer>> result = new HashMap<>();
+
+        for (Integer idx: indices) {
+            if (!markers.containsKey(idx))
+                continue;
+            List<Integer> numbers = markers.get(idx);
+            for (Integer n: numbers) {
+                if (!result.containsKey(n))
+                    result.put(n, new ArrayList<>());
+                result.get(n).add(idx);
+            }
+
+        }
+
+        return result;
+    }
 }
