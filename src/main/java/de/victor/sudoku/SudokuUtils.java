@@ -334,4 +334,40 @@ public class SudokuUtils {
 
         return result;
     }
+
+    /**
+     * rotates the pencilmark grid 90° to the right, so rows 0 to 8 becomes columns 8 to 0
+     * and columns 0 to 8 becomes rows 0 to 8
+     *
+     * @param markers rotated instance of pencilmarks
+     */
+    public static HashMap<Integer, List<Integer>> rotatePencilmarksRight(HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, List<Integer>> rotated = new HashMap<>();
+
+        for (int i : markers.keySet()) {
+            int j = (i % 9) * 9 + 8 - (i/9);
+            rotated.put(j, markers.get(i));
+        }
+
+        return rotated;
+    }
+
+    /**
+     * rotates the pencilmark grid 90° to the left, so rows 0 to 8 becomes columns 0 to 8
+     * and columns 0 to 8 becomes rows 8 to 0
+     *
+     * @param markers rotated instance of pencilmarks
+     */
+    public static HashMap<Integer, List<Integer>> rotatePencilmarksLeft(HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, List<Integer>> rotated = new HashMap<>();
+
+        for (int i : markers.keySet()) {
+            int j = (8 - (i % 9)) * 9 + (i / 9);
+            rotated.put(j, markers.get(i));
+        }
+
+        return rotated;
+    }
 }
