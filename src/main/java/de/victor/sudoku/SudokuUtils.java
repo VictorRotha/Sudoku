@@ -370,4 +370,71 @@ public class SudokuUtils {
 
         return rotated;
     }
+
+
+    /**
+     *
+     * Searching for cells in a given part of pencilmarks, that contains only the same two numbers.
+     * Removes these numbers from the other cells and repeat until no marker can be removed.<br/>
+     * example: {1:[1,2], 2:[1,3,4], 3:[1,2]} -> {1:[1,2], 2:[3,4], 3:[1,2]}<br/>
+     * example: {1:[1,2], 2:[1,2,3], 3:[1,2]} -> {1:[1,2], 2:[3], 3:[1,2]}
+     *
+     * @param subMap sub map of pencilmarks
+     * @return an altered version of the subMap
+     */
+    public static HashMap<Integer, List<Integer>> findDoublesInSubMap(HashMap<Integer, List<Integer>> subMap) {
+        List<Integer> candidates = new ArrayList<>(subMap.keySet());
+        HashMap<Integer, List<Integer>> resultMap = new HashMap<>();
+        for (Integer idx : subMap.keySet())
+            resultMap.put(idx, new ArrayList<>(subMap.get(idx)));
+        List<Integer> foundTotal = new ArrayList<>();
+
+
+        HashSet<Integer> values;
+        boolean success = true;
+
+        while (success) {
+
+            success = false;
+
+            for (int i = 0; i < candidates.size() - 1; i++) {
+
+                int c1 = candidates.get(i);
+
+                if (foundTotal.contains(c1))
+                    continue;
+
+                if (resultMap.get(c1).size() != 2)
+                    continue;
+
+                for (int j = i + 1; j < candidates.size(); j++) {
+                    int c2 = candidates.get(j);
+                    if (foundTotal.contains(c2))
+                        continue;
+                    if (resultMap.get(c2).size() != 2)
+                        continue;
+                    values = new HashSet<>(resultMap.get(c1));
+                    values.addAll(resultMap.get(c2));
+                    if (values.size() > 2)
+                        continue;
+
+                    System.out.printf("Double found for candidates %s and %s; values %s\n", c1, c2, values);
+
+                    List<Integer> foundCandidates = new ArrayList<>(Arrays.asList(c1, c2));
+                    foundTotal.addAll(foundCandidates);
+
+                    for (int idx: resultMap.keySet()) {
+                        if (!foundCandidates.contains(idx))
+                            if (resultMap.get(idx).removeAll(values)) {
+                                success = true;
+                            }
+                    }
+                }
+            }
+        }
+
+        return resultMap;
+
+    }
+
 }
