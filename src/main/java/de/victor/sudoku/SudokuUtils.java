@@ -418,7 +418,7 @@ public class SudokuUtils {
                     if (values.size() > 2)
                         continue;
 
-                    System.out.printf("Double found for candidates %s and %s; values %s\n", c1, c2, values);
+//                    System.out.printf("Double found for candidates %s and %s; values %s\n", c1, c2, values);
 
                     List<Integer> foundCandidates = new ArrayList<>(Arrays.asList(c1, c2));
                     foundTotal.addAll(foundCandidates);
