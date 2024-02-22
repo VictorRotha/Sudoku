@@ -374,7 +374,7 @@ public class SudokuUtils {
 
     /**
      *
-     * Searching for cells in a given part of pencilmarks, that contains only the same two numbers.
+     * Searching for two cells in a given part of pencilmarks, that contains only the same two numbers.
      * Removes these numbers from the other cells and repeat until no marker can be removed.<br/>
      * example: {1:[1,2], 2:[1,3,4], 3:[1,2]} -> {1:[1,2], 2:[3,4], 3:[1,2]}<br/>
      * example: {1:[1,2], 2:[1,2,3], 3:[1,2]} -> {1:[1,2], 2:[3], 3:[1,2]}
@@ -431,6 +431,92 @@ public class SudokuUtils {
                     }
                 }
             }
+        }
+
+        return resultMap;
+
+    }
+
+    /**
+     *
+     * Searching for three cells in a given part of pencilmarks, that contains only one or more of the same three numbers.
+     * Removes these numbers from the other cells and repeat until no marker can be removed.<br/>
+     * example: {1:[1,2,3], 2:[1,3], 3:[1,2,4], 4:[1,2]} -> {1:[1,2,3], 2:[1,3], 3:[4], 4:[1,2]}<br/>
+     *
+     * @param subMap sub map of pencilmarks
+     * @return an altered version of the subMap
+     */
+    public static HashMap<Integer, List<Integer>> findTriplesInMap(HashMap<Integer, List<Integer>> subMap) {
+
+        List<Integer> candidates = new ArrayList<>(subMap.keySet());
+        HashMap<Integer, List<Integer>> resultMap = new HashMap<>();
+        for (Integer idx : subMap.keySet())
+            resultMap.put(idx, new ArrayList<>(subMap.get(idx)));
+        List<Integer> foundTotal = new ArrayList<>();
+
+        HashSet<Integer> values;
+        boolean success = true;
+
+        while (success) {
+
+            success = false;
+
+            for (int i = 0; i < candidates.size() - 2; i++) {
+
+
+                int c1 = candidates.get(i);
+
+                if (foundTotal.contains(c1))
+                    continue;
+
+                if (resultMap.get(c1).size() > 3)
+                    continue;
+
+                for (int j = i + 1; j < candidates.size() - 1; j++) {
+                    int c2 = candidates.get(j);
+                    if (foundTotal.contains(c2))
+                        continue;
+                    if (resultMap.get(c2).size() > 3)
+                        continue;
+                    values = new HashSet<>(resultMap.get(c1));
+                    values.addAll(resultMap.get(c2));
+                    if (values.size() > 3)
+                        continue;
+                    for (int k = j + 1; k < candidates.size(); k++) {
+                        int c3 = candidates.get(k);
+
+                        if (foundTotal.contains(c3))
+                            continue;
+                        if (resultMap.get(c3).size() > 3)
+                            continue;
+                        values = new HashSet<>(resultMap.get(c1));
+                        values.addAll(resultMap.get(c2));
+                        values.addAll(resultMap.get(c3));
+
+                        if (values.size() > 3)
+                            continue;
+
+//                        System.out.printf("Triple found for candidates %s, %s and %s; values %s\n", c1, c2, c3, values);
+
+                        List<Integer> foundCandidates = new ArrayList<>(Arrays.asList(c1, c2, c3));
+                        foundTotal.addAll(foundCandidates);
+
+                        for (int idx: resultMap.keySet()) {
+                            if (!foundCandidates.contains(idx))
+                                if (resultMap.get(idx).removeAll(values)) {
+                                    success = true;
+                                }
+                        }
+
+//                        if (success) {
+//                            System.out.println(resultMap);
+//                        }
+
+                    }
+                }
+            }
+
+
         }
 
         return resultMap;
