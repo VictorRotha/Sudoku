@@ -9,19 +9,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class NakedTriples implements SolvingTechnique {
+public class HiddenTriples implements SolvingTechnique {
 
 
-    /**
-     * Searching for cells, who contains only the same three numbers.
-     * If all cells in the same row, removes the numbers from the other cells in the row.<br/>
-     * If all cells in the same column, removes the numbers from the other cells in the column.<br/>
-     * If all cells in the same box, removes the numbers from the other cells in the box.<br/>
-     *
-     * @param puzzle sudoku puzzle
-     * @param markers pencilmarks
-     * @return SolvingResult
-     */
+
+    //TODO: remove collapsing, also hidden doubles ?
     @Override
     public SolvingResult execute(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
 
@@ -40,10 +32,11 @@ public class NakedTriples implements SolvingTechnique {
 
             indices = SudokuUtils.getIndicesFromAbbr(line);
 
-            Integer[] removed = findNakedTriples(indices, markers);
+            Integer[] removed = findHiddenTriples(indices, markers);
             removedTotal = removedTotal || removed.length > 0;
 
             if (removed.length > 0) {
+                System.out.println("HiddenTriples: removed from " + line + ", indices : " + Arrays.toString(removed));
 
                 boolean collapse = false;
                 for (int idx: removed) {
@@ -81,37 +74,35 @@ public class NakedTriples implements SolvingTechnique {
 
     }
 
-    /**
-     * Searches for three cells who contains only the same three numbers.
-     * Removes the numbers from the other and write to pencilmarks
-     *
-     * @param indices cells to look in
-     * @param markers pencilmarks
-     * @return int[] of indices, from which a number is being removed
-     */
-    public Integer[] findNakedTriples(List<Integer> indices, HashMap<Integer, List<Integer>> markers) {
+    public Integer[] findHiddenTriples(List<Integer> indices, HashMap<Integer, List<Integer>> markers) {
 
-        HashMap<Integer, List<Integer>> map = new HashMap<>();
-        for (Integer idx: indices) {
-            if (markers.containsKey(idx))
-                map.put(idx, new ArrayList<>(markers.get(idx)));
+        HashMap<Integer, List<Integer>> indicesByNumbers = SudokuUtils.getIndicesByNumber(indices, markers);
+
+        HashMap<Integer, List<Integer>> newIndisByNumbers = SudokuUtils.findTriplesInSubMap(indicesByNumbers);
+
+        HashMap<Integer, List<Integer>> newMap = new HashMap<>();
+
+        for (Integer number : newIndisByNumbers.keySet()) {
+            for (Integer idx : newIndisByNumbers.get(number)) {
+                if (!newMap.containsKey(idx))
+                    newMap.put(idx, new ArrayList<>());
+                newMap.get(idx).add(number);
+            }
         }
 
-        HashMap<Integer, List<Integer>> newMap = SudokuUtils.findTriplesInSubMap(map);
-
         List<Integer> removedFrom = new ArrayList<>();
-        for (int idx : map.keySet()) {
-            if (map.get(idx).size() > newMap.get(idx).size()) {
+        for (Integer idx : newMap.keySet()) {
+            if (newMap.get(idx).size() < markers.get(idx).size()) {
                 removedFrom.add(idx);
                 markers.put(idx, newMap.get(idx));
             }
-
         }
 
         Integer[] result = new Integer[removedFrom.size()];
         removedFrom.toArray(result);
 
         return result;
+
 
     }
 }

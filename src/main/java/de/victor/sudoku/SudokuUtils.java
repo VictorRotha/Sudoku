@@ -1,7 +1,5 @@
 package de.victor.sudoku;
 
-import de.victor.sudoku.classifier.SolvingResult;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -446,10 +444,12 @@ public class SudokuUtils {
      * @param subMap sub map of pencilmarks
      * @return an altered version of the subMap
      */
-    public static HashMap<Integer, List<Integer>> findTriplesInMap(HashMap<Integer, List<Integer>> subMap) {
+    public static HashMap<Integer, List<Integer>> findTriplesInSubMap(HashMap<Integer, List<Integer>> subMap) {
+
+        HashMap<Integer, List<Integer>> resultMap = new HashMap<>();
 
         List<Integer> candidates = new ArrayList<>(subMap.keySet());
-        HashMap<Integer, List<Integer>> resultMap = new HashMap<>();
+
         for (Integer idx : subMap.keySet())
             resultMap.put(idx, new ArrayList<>(subMap.get(idx)));
         List<Integer> foundTotal = new ArrayList<>();
@@ -493,10 +493,8 @@ public class SudokuUtils {
                         values.addAll(resultMap.get(c2));
                         values.addAll(resultMap.get(c3));
 
-                        if (values.size() > 3)
+                        if (values.size() != 3)
                             continue;
-
-//                        System.out.printf("Triple found for candidates %s, %s and %s; values %s\n", c1, c2, c3, values);
 
                         List<Integer> foundCandidates = new ArrayList<>(Arrays.asList(c1, c2, c3));
                         foundTotal.addAll(foundCandidates);
@@ -507,10 +505,6 @@ public class SudokuUtils {
                                     success = true;
                                 }
                         }
-
-//                        if (success) {
-//                            System.out.println(resultMap);
-//                        }
 
                     }
                 }

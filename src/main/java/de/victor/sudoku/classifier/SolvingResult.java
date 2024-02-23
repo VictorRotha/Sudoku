@@ -5,7 +5,6 @@ import java.util.List;
 
 public class SolvingResult {
 
-
     public int[] updatedGrid;
     public HashMap<Integer, List<Integer>> updatedPencilMarks;
 
