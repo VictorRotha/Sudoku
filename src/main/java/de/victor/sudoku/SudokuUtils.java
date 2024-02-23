@@ -505,16 +505,53 @@ public class SudokuUtils {
                                     success = true;
                                 }
                         }
-
                     }
                 }
             }
-
-
         }
 
         return resultMap;
 
     }
+
+    /**
+     * Searches for candidates, who only occurs twice in a row.
+     * Returns the columns who contains the candidate, mapped to the candidate, mapped to the row.<br/>
+     * example output:<br/>
+     * {<br/>
+     * 1 = {7 = (1, 3), 8 = (4, 5)},<br/>
+     * 3 = {7 = (1, 3)},<br/>
+     * }<br/>
+     * candidate 7 in row 1 lies only in column 1 and 3<br/>
+     * candidate 8 in row 1 lies only in column 4 and 5<br/>
+     * candidate 7 in row 2 lies only in column 1 and 3<br/>
+     *
+     *
+     *
+     * @param markers pencilmarks
+     * @return map of row -> map of candidate -> list of (col1, col2)
+     */
+    public static HashMap<Integer, HashMap<Integer, List<Integer>>> findCandidatePairInRow(HashMap<Integer, List<Integer>> markers) {
+
+        HashMap<Integer, HashMap<Integer, List<Integer>>> doubles = new HashMap<>();
+        // get columns that contains the only two n in row
+        for (int row = 0; row < 9; row++) {
+            var indices = SudokuUtils.getRowIndices(row * 9);
+            var indicesByNumber = getIndicesByNumber(indices, markers);
+            if (indicesByNumber.isEmpty())
+                continue;
+            for (int n : indicesByNumber.keySet()) {
+                if (indicesByNumber.get(n).size() != 2)
+                    continue;
+                doubles.computeIfAbsent(row, k -> new HashMap<>());
+                var cols = indicesByNumber.get(n).stream().map(i -> i % 9).collect(Collectors.toList());
+                doubles.get(row).put(n, cols);
+            }
+        }
+
+        return doubles;
+    }
+
+
 
 }
