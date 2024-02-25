@@ -60,52 +60,25 @@ public class Main {
         };
 
 
+        System.out.println("PUZZLE");
+        SudokuUtils.printSudoku(puzzle);
 
+        int[] solvedPuzzle  = sudoku.solvePuzzle(puzzle);
+        System.out.println("\nSOLVED PUZZLE");
+        SudokuUtils.printSudoku(solvedPuzzle, puzzle);
+        System.out.println("\nis valid: " + SudokuUtils.isSudokuValid(solvedPuzzle));
 
+        checkForMultipleResults(sudoku, solvedPuzzle, puzzle);
 
-
-
-
-        int[] grid = sudoku.solvePuzzle(puzzle);
-
-//        System.out.println(Arrays.toString(grid));
-
-        SudokuUtils.printSudoku(grid);
-        System.out.println("is valid: " + SudokuUtils.isSudokuValid(grid));
-
-        checkLevel(sudoku, grid, puzzle);
         System.out.println();
-
         System.out.println(puzzleInfo(puzzle));
+
 
         Classifier classifier = new Classifier();
-        classifier.setPuzzle(new Puzzle(grid, puzzle));
+        var result = classifier.solve(new Puzzle(puzzle, solvedPuzzle));
 
-//        classifier.candidateLines(puzzle, null);
-
-        classifier.solve();
-//
-////        classifier.candidateLines(puzzle, null);
-
-
-        System.out.println(puzzleInfo(puzzle));
-        SudokuUtils.printSudoku(classifier.getPuzzle().puzzle);
-
-        System.out.println("is valid " + SudokuUtils.isSudokuValid(puzzle));
-
-        int[] solvedPuzzle = sudoku.solvePuzzle(puzzle);
-
-        if (solvedPuzzle == null) {
-            System.out.println("not solvable, original was \n");
-            SudokuUtils.printSudoku(grid, classifier.getOriginalPuzzle());
-        }
-
-        else {
-            System.out.println("solvable");
-            SudokuUtils.printSudoku(solvedPuzzle, classifier.getOriginalPuzzle());
-            System.out.println("is valid " + SudokuUtils.isSudokuValid(solvedPuzzle));
-        }
-
+        System.out.println("\nCLASSIFIER PUZZLE RESULT");
+        System.out.println(result);
 
     }
 
@@ -121,11 +94,11 @@ public class Main {
 
 
 
-    public static void checkLevel(Sudoku sudoku, int[] puzzle, int[] level) {
+    public static void checkForMultipleResults(Sudoku sudoku, int[] solvedPuzzle, int[] puzzle) {
 
-        SudokuUtils.printSudoku(level);
+//        SudokuUtils.printSudoku(puzzle);
 
-        PuzzleResult result = sudoku.solvePuzzleAndCheckForMultipleSolutions(level);
+        PuzzleResult result = sudoku.solvePuzzleAndCheckForMultipleSolutions(puzzle);
 
         if (!result.hasSolution()) {
             System.out.println("not solvable !");
@@ -134,15 +107,17 @@ public class Main {
 
         System.out.println((result.hasSingleSolution()) ? "one solution" : "multiple solutions");
 
-        SudokuUtils.printSudoku(result.firstResult);
-        System.out.println("same as origin: " + Arrays.equals(puzzle, result.firstResult));
-        System.out.println("is valid      : " + SudokuUtils.isSudokuValid(result.firstResult));
+//        SudokuUtils.printSudoku(result.firstResult);
+        System.out.println("SOLUTION 1:");
+        System.out.println("    same as origin: " + Arrays.equals(solvedPuzzle, result.firstResult));
+        System.out.println("    is valid      : " + SudokuUtils.isSudokuValid(result.firstResult));
 
 
         if (result.secondResult != null) {
-            SudokuUtils.printSudoku(result.secondResult);
-            System.out.println("same as origin: " + Arrays.equals(puzzle, result.secondResult));
-            System.out.println("is valid      : " + SudokuUtils.isSudokuValid(result.secondResult));
+//            SudokuUtils.printSudoku(result.secondResult);
+            System.out.println("SOLUTION 2:");
+            System.out.println("    same as origin: " + Arrays.equals(solvedPuzzle, result.secondResult));
+            System.out.println("    is valid      : " + SudokuUtils.isSudokuValid(result.secondResult));
 
         }
 

@@ -22,23 +22,7 @@ public class Sudoku {
 
     }
 
-    /**
-     * Checks if a given level has more than one solution.
-     *
-     * @param puzzle the sudoku to be solved.
-     * @return true if there is only one solution, false otherwise
-     */
-    public boolean checkForSingleSolution(int[] puzzle) {
 
-        int[] grid1 = Arrays.copyOf(puzzle, puzzle.length);
-        boolean result1 = solveOrdered(grid1, false);
-
-        int[] grid2 = Arrays.copyOf(puzzle, puzzle.length);
-        boolean result2 = solveOrdered(grid2, true);
-
-        return (result1 && result2 && Arrays.equals(grid1, grid2));
-
-    }
 
 
     /**
@@ -81,6 +65,24 @@ public class Sudoku {
         solveWithUniqueCheck(grid, result);
 
         return result;
+
+    }
+
+    /**
+     * Checks if a given level has more than one solution.
+     *
+     * @param puzzle the sudoku to be solved.
+     * @return true if there is only one solution, false otherwise
+     */
+    public boolean checkForSingleSolution(int[] puzzle) {
+
+        int[] grid1 = Arrays.copyOf(puzzle, puzzle.length);
+        boolean result1 = solveOrdered(grid1, false);
+
+        int[] grid2 = Arrays.copyOf(puzzle, puzzle.length);
+        boolean result2 = solveOrdered(grid2, true);
+
+        return (result1 && result2 && Arrays.equals(grid1, grid2));
 
     }
 

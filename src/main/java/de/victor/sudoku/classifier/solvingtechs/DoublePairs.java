@@ -17,7 +17,7 @@ public class DoublePairs implements SolvingTechnique {
         var added = 0;
         if (markersRemoved) {
             var collapseResult = new CollapsePencilMarks().execute(puzzle, markers);
-            added = collapseResult.addedValues;
+            added = collapseResult.addedValues();
         }
 
 
@@ -66,7 +66,7 @@ public class DoublePairs implements SolvingTechnique {
      * candidate 1 in box 0 in column 0 and 2 and in box 3 in column 1 and 2<br/>
      * candidate 3 in box 1 in column 7 and 8<br/>
      *
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return Map{number : {box : (col1, col2)}}
      */
     protected Map<Integer, HashMap<Integer, List<Integer>>> findCandidateDoublesInBoxes(HashMap<Integer, List<Integer>> markers) {

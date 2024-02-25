@@ -1,22 +1,19 @@
 package de.victor.sudoku.classifier;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-public class SolvingResult {
+public record SolvingResult (
+        int[] puzzle,
+        Map<Integer, List<Integer>> pencilMarks,
+        int addedValues,
+        boolean arePencilMarksAltered
+) {
 
-    public int[] updatedGrid;
-    public HashMap<Integer, List<Integer>> updatedPencilMarks;
-
-    public int addedValues;
-    public boolean arePencilMarksAltered;
-
-
-    public SolvingResult(int[] updatedGrid, HashMap<Integer, List<Integer>> updatedPencilMarks, int addedValues, boolean arePencilMarksAltered) {
-        this.updatedGrid = updatedGrid;
-        this.updatedPencilMarks = updatedPencilMarks;
-        this.addedValues = addedValues;
-        this.arePencilMarksAltered = arePencilMarksAltered;
+    @Override
+    public String toString() {
+        return String.format("puzzle=%s, pencilMarks=%s, addedValues=%s, arePencilMarksAltered=%s",
+                Arrays.toString(puzzle), pencilMarks, addedValues, arePencilMarksAltered);
     }
-
 }

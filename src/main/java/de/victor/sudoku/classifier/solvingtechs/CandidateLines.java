@@ -17,7 +17,7 @@ public class CandidateLines implements SolvingTechnique {
      * Removes the candidate from all other cell in that line.
      *
      * @param puzzle sudoku puzzle
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return SolvingResult
      */
     @Override
@@ -26,7 +26,7 @@ public class CandidateLines implements SolvingTechnique {
         var removed = removeMarkers(markers);
         var added = 0;
         if (removed)
-            added = new CollapsePencilMarks().execute(puzzle, markers).addedValues;
+            added = new CollapsePencilMarks().execute(puzzle, markers).addedValues();
 
 
         return new SolvingResult(

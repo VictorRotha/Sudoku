@@ -25,8 +25,12 @@ public class SwordFish implements SolvingTechnique {
 
         if (altered) {
             var collapseResult = new CollapsePencilMarks().execute(puzzle, markers);
-            collapseResult.arePencilMarksAltered = altered;
-            return collapseResult;
+            return new SolvingResult(
+                    collapseResult.puzzle(),
+                    collapseResult.pencilMarks(),
+                    collapseResult.addedValues(),
+                    altered
+            );
         }
 
         return new SolvingResult(puzzle, markers, 0, false);
@@ -34,8 +38,8 @@ public class SwordFish implements SolvingTechnique {
     }
 
     /**
-     * Looks for SwordFish and removes markers from pencilmarks
-     * @param markers pencilmarks
+     * Looks for SwordFish and removes markers from pencilMarks
+     * @param markers pencilMarks
      * @return true if markers altered, else false
      */
     boolean swordfishRemoveMarkers(HashMap<Integer, List<Integer>> markers) {
@@ -50,7 +54,7 @@ public class SwordFish implements SolvingTechnique {
      * If found, the candidate will be removed from other pencilmark rows in all three columns
      *
      * @param doubles {row={candidate=(col1, col2}}
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return true if any candidate was removed, else false
      */
     protected boolean swordfishCompareRows(HashMap<Integer, HashMap<Integer, List<Integer>>> doubles, HashMap<Integer, List<Integer>> markers) {

@@ -190,9 +190,9 @@ public class SudokuUtils {
 
 
     /**
-     * removes a candidate from all cells in pencilmarks specified in positions.
+     * removes a candidate from all cells in pencilMarks specified in positions.
      *
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @param candidate candidate to remove from markers
      * @param positions indices whe candidate should be removed
      * @return true if a candidate was removed at least once, else false
@@ -337,7 +337,7 @@ public class SudokuUtils {
      * rotates the pencilmark grid 90° to the right, so rows 0 to 8 becomes columns 8 to 0
      * and columns 0 to 8 becomes rows 0 to 8
      *
-     * @param markers rotated instance of pencilmarks
+     * @param markers rotated instance of pencilMarks
      */
     public static HashMap<Integer, List<Integer>> rotatePencilmarksRight(HashMap<Integer, List<Integer>> markers) {
 
@@ -355,7 +355,7 @@ public class SudokuUtils {
      * rotates the pencilmark grid 90° to the left, so rows 0 to 8 becomes columns 0 to 8
      * and columns 0 to 8 becomes rows 8 to 0
      *
-     * @param markers rotated instance of pencilmarks
+     * @param markers rotated instance of pencilMarks
      */
     public static HashMap<Integer, List<Integer>> rotatePencilmarksLeft(HashMap<Integer, List<Integer>> markers) {
 
@@ -372,12 +372,12 @@ public class SudokuUtils {
 
     /**
      *
-     * Searching for two cells in a given part of pencilmarks, that contains only the same two numbers.
+     * Searching for two cells in a given part of pencilMarks, that contains only the same two numbers.
      * Removes these numbers from the other cells and repeat until no marker can be removed.<br/>
      * example: {1:[1,2], 2:[1,3,4], 3:[1,2]} -> {1:[1,2], 2:[3,4], 3:[1,2]}<br/>
      * example: {1:[1,2], 2:[1,2,3], 3:[1,2]} -> {1:[1,2], 2:[3], 3:[1,2]}
      *
-     * @param subMap sub map of pencilmarks
+     * @param subMap sub map of pencilMarks
      * @return an altered version of the subMap
      */
     public static HashMap<Integer, List<Integer>> findDoublesInSubMap(HashMap<Integer, List<Integer>> subMap) {
@@ -437,11 +437,11 @@ public class SudokuUtils {
 
     /**
      *
-     * Searching for three cells in a given part of pencilmarks, that contains only one or more of the same three numbers.
+     * Searching for three cells in a given part of pencilMarks, that contains only one or more of the same three numbers.
      * Removes these numbers from the other cells and repeat until no marker can be removed.<br/>
      * example: {1:[1,2,3], 2:[1,3], 3:[1,2,4], 4:[1,2]} -> {1:[1,2,3], 2:[1,3], 3:[4], 4:[1,2]}<br/>
      *
-     * @param subMap sub map of pencilmarks
+     * @param subMap sub map of pencilMarks
      * @return an altered version of the subMap
      */
     public static HashMap<Integer, List<Integer>> findTriplesInSubMap(HashMap<Integer, List<Integer>> subMap) {
@@ -528,7 +528,7 @@ public class SudokuUtils {
      *
      *
      *
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return map of row -> map of candidate -> list of (col1, col2)
      */
     public static HashMap<Integer, HashMap<Integer, List<Integer>>> findCandidatePairInRow(HashMap<Integer, List<Integer>> markers) {
@@ -550,6 +550,22 @@ public class SudokuUtils {
         }
 
         return doubles;
+    }
+
+    public static String confirmPuzzleSolution(int[] puzzle, int[] solvedPuzzle) {
+
+        if (puzzle.length != solvedPuzzle.length)
+            return String.format("puzzle length differ: puzzle %s, solvedPuzzle %s", puzzle.length, solvedPuzzle.length);
+
+
+
+        for (int i = 0; i < puzzle.length; i++) {
+            if (puzzle[i] != 0 && puzzle[i] != solvedPuzzle[i]) {
+                return String.format("puzzles differ at %s puzzle: %s, solvedPuzzle %s\n", i, puzzle[i], solvedPuzzle[i]);
+            }
+        }
+
+        return null;
     }
 
 

@@ -23,9 +23,12 @@ public class XWings implements SolvingTechnique {
 
         if (altered) {
             var collapseResult = new CollapsePencilMarks().execute(puzzle, rotatedMarkers);
-            collapseResult.arePencilMarksAltered = altered;
-            return collapseResult;
-        }
+            return new SolvingResult(
+                    collapseResult.puzzle(),
+                    collapseResult.pencilMarks(),
+                    collapseResult.addedValues(),
+                    altered);
+           }
 
         return new SolvingResult(puzzle, markers, 0, false);
 
@@ -33,8 +36,8 @@ public class XWings implements SolvingTechnique {
     }
 
     /**
-     * Looks for XWings and removes markers from pencilmarks
-     * @param markers pencilmarks
+     * Looks for XWings and removes markers from pencilMarks
+     * @param markers pencilMarks
      * @return true if markers altered, else false
      */
     boolean xWingRemoveMarkers(HashMap<Integer, List<Integer>> markers) {
@@ -49,7 +52,7 @@ public class XWings implements SolvingTechnique {
      * If found, the candidate will be removed from other pencilmark rows in both columns
      *
      * @param doubles {row={candidate=(col1, col2}}
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return true if any candidate was removed, else false
      */
     protected boolean xWingCompareRows(HashMap<Integer, HashMap<Integer, List<Integer>>> doubles, HashMap<Integer, List<Integer>> markers) {

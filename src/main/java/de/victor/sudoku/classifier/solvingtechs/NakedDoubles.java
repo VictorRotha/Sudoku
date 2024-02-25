@@ -19,7 +19,7 @@ public class NakedDoubles implements SolvingTechnique {
      * If both cells in the same box, removes the numbers from the other cells in the box.<br/>
      *
      * @param puzzle sudoku puzzle
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return SolvingResult
      */
     @Override
@@ -55,7 +55,7 @@ public class NakedDoubles implements SolvingTechnique {
                 }
 
                 if (collapse) {
-                    added = new CollapsePencilMarks().execute(puzzle, markers).addedValues;
+                    added = new CollapsePencilMarks().execute(puzzle, markers).addedValues();
                     break;
 
                 } else {
@@ -85,10 +85,10 @@ public class NakedDoubles implements SolvingTechnique {
 
     /**
      * Searches for a pair of cells, that contains only the same two numbers.
-     * Removes the numbers from the other cells and write to pencilmarks
+     * Removes the numbers from the other cells and write to pencilMarks
      *
      * @param indices cells to look in
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return int[] of indices, from which a number is being removed
      */
     public Integer[] findNakedDoubles(List<Integer> indices, HashMap<Integer, List<Integer>> markers) {

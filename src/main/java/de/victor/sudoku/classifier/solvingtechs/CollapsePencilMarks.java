@@ -10,11 +10,11 @@ import java.util.List;
 public class CollapsePencilMarks implements SolvingTechnique {
 
 
- /** Searches the pencilmarks for single entries and writes them to the puzzle. Collapsed entries were deleted from markers.
+ /** Searches the pencilMarks for single entries and writes them to the puzzle. Collapsed entries were deleted from markers.
  * After that the markers are updated and the procedure repeats until no cell can be collapsed anymore.
  *
  * @param puzzle sudoku puzzle as int[]
- * @param markers pencilmarks
+ * @param markers pencilMarks
  * @return SolvingResult
  */
     @Override

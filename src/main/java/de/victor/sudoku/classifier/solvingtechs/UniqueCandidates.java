@@ -36,65 +36,72 @@ public class UniqueCandidates implements SolvingTechnique {
      * Looks in all rows, columns and boxes for candidates who appear only once in this subset.
      *
      * @param puzzle sudoku puzzle
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return count of numbers added to the puzzle
      */
     protected int eliminateUniques(int[] puzzle, HashMap<Integer, List<Integer>> markers) {
 
         int addedNumbers = 0;
+        var uniques = new HashMap<Integer, Integer>();
 
         for (int row = 0; row < 9; row ++) {
             var cells = SudokuUtils.getRowIndices(row * 9);
-            addedNumbers += findUniqueCandidates(puzzle, cells, markers);
+            uniques.putAll(findUniqueCandidates(cells, markers));
+
         }
 
 
         for (int col = 0; col < 9; col++) {
             var cells = SudokuUtils.getColumnIndices(col);
-            addedNumbers += findUniqueCandidates(puzzle, cells, markers);
+            uniques.putAll(findUniqueCandidates(cells, markers));
 
         }
 
         for (int row = 0; row < 9; row+=3) {
             for (int col = 0; col < 9; col+=3) {
                 List<Integer> cells = SudokuUtils.getBoxIndices(row * 9 + col);
-                addedNumbers += findUniqueCandidates(puzzle, cells, markers);
+                uniques.putAll(findUniqueCandidates(cells, markers));
             }
         }
 
-        return addedNumbers;
+
+        for (int idx : uniques.keySet()) {
+            puzzle[idx] = uniques.get(idx);
+            markers.remove(idx);
+        }
+
+        SudokuUtils.updatePencilMarks(puzzle, markers);
+
+        return uniques.size();
 
     }
 
-    /**
-     * Looks for candidates who appear only once in a given subset of puzzle and updates the puzzle and pencilmarks.
-     *
-     * @param puzzle sudoku puzzle
-     * @param cells subset as list of indices
-     * @param markers pencilmarks
-     * @return count of numbers added to the puzzle
-     */
-    protected int findUniqueCandidates(int[] puzzle, List<Integer> cells, HashMap<Integer, List<Integer>> markers) {
 
-        int addedNumbers = 0;
+
+
+    /**
+     * Looks for candidates who appear only once in a given subset of puzzle.
+     * @param cells subset as list of indices
+     * @param markers pencilMarks
+     * @return unique numbers mapped to their indices
+     */
+    protected Map<Integer, Integer> findUniqueCandidates(List<Integer> cells, HashMap<Integer, List<Integer>> markers) {
 
         Map<Integer, List<Integer>> indicesByNumbers = SudokuUtils.getIndicesByNumber(cells, markers);
+
+        var result = new HashMap<Integer, Integer>();
 
         for (int number : indicesByNumbers.keySet()) {
 
             if (indicesByNumbers.get(number).size() == 1) {
                 int idx = indicesByNumbers.get(number).get(0);
-                puzzle[idx] = number;
-                markers.remove(idx);
-                addedNumbers++;
+                result.put(idx, number);
             }
         }
 
-        return addedNumbers;
+        return result;
 
 
     }
-
-
 
 }

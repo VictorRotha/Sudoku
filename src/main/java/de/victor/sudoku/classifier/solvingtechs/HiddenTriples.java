@@ -47,7 +47,7 @@ public class HiddenTriples implements SolvingTechnique {
                 }
 
                 if (collapse) {
-                    added = new CollapsePencilMarks().execute(puzzle, markers).addedValues;
+                    added = new CollapsePencilMarks().execute(puzzle, markers).addedValues();
                     break;
 
                 } else {

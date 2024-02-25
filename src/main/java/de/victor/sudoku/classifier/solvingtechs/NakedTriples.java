@@ -19,7 +19,7 @@ public class NakedTriples implements SolvingTechnique {
      * If all cells in the same box, removes the numbers from the other cells in the box.<br/>
      *
      * @param puzzle sudoku puzzle
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return SolvingResult
      */
     @Override
@@ -48,13 +48,15 @@ public class NakedTriples implements SolvingTechnique {
                 boolean collapse = false;
                 for (int idx: removed) {
                     if (markers.containsKey(idx) && markers.get(idx).size() == 1) {
+                        //TODO
                         puzzle[idx] = markers.get(idx).get(0);
                         collapse = true;
                     }
                 }
 
+                //TODO testcase
                 if (collapse) {
-                    added = new CollapsePencilMarks().execute(puzzle, markers).addedValues;
+                    added = new CollapsePencilMarks().execute(puzzle, markers).addedValues();
                     break;
 
                 } else {
@@ -83,10 +85,10 @@ public class NakedTriples implements SolvingTechnique {
 
     /**
      * Searches for three cells who contains only the same three numbers.
-     * Removes the numbers from the other and write to pencilmarks
+     * Removes the numbers from the other and write to pencilMarks
      *
      * @param indices cells to look in
-     * @param markers pencilmarks
+     * @param markers pencilMarks
      * @return int[] of indices, from which a number is being removed
      */
     public Integer[] findNakedTriples(List<Integer> indices, HashMap<Integer, List<Integer>> markers) {
