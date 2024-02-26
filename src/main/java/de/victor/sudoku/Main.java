@@ -45,19 +45,32 @@ public class Main {
 //                0, 0, 0, 0, 1, 0, 0, 0, 0,
 //                1, 7, 0, 0, 2, 0, 9, 0, 8
 //        };
-
-
+        //
         int[] puzzle = new int[]{
-                6,0,0,0,5,0,0,9,0,
-                0,0,0,0,0,0,0,4,7,
-                3,0,0,4,7,0,0,0,0,
-                0,0,0,0,0,6,5,0,4,
-                0,1,0,5,2,9,0,6,0,
-                7,0,5,3,0,0,0,0,0,
-                0,0,0,0,3,4,0,0,2,
-                8,3,0,0,0,0,0,0,0,
-                0,7,0,0,8,0,0,0,9
+                2, 0, 0, 0, 0, 0, 0, 8, 9,
+                0, 0, 1, 0, 0, 0, 0, 7, 0,
+                0, 4, 3, 0, 8, 9, 0, 0, 0,
+                0, 0, 0, 3, 2, 0, 0, 9, 0,
+                9, 0, 0, 0, 0, 0, 0, 0, 3,
+                0, 1, 0, 0, 5, 6, 0, 0, 0,
+                0, 0, 0, 8, 6, 0, 7, 5, 0,
+                0, 7, 0, 0, 0, 0, 2, 0, 0,
+                5, 8, 0, 0, 0, 0, 0, 0, 1
         };
+
+
+
+//        int[] puzzle = new int[]{
+//                6,0,0,0,5,0,0,9,0,
+//                0,0,0,0,0,0,0,4,7,
+//                3,0,0,4,7,0,0,0,0,
+//                0,0,0,0,0,6,5,0,4,
+//                0,1,0,5,2,9,0,6,0,
+//                7,0,5,3,0,0,0,0,0,
+//                0,0,0,0,3,4,0,0,2,
+//                8,3,0,0,0,0,0,0,0,
+//                0,7,0,0,8,0,0,0,9
+//        };
 
 
         System.out.println("PUZZLE");
@@ -75,10 +88,12 @@ public class Main {
 
 
         Classifier classifier = new Classifier();
-        var result = classifier.solve(new Puzzle(puzzle, solvedPuzzle));
+        var result = classifier.classify(new Puzzle(puzzle, solvedPuzzle));
 
         System.out.println("\nCLASSIFIER PUZZLE RESULT");
         System.out.println(result);
+
+        SudokuUtils.printSudoku(result.solution());
 
     }
 
@@ -91,7 +106,6 @@ public class Main {
         return "The puzzle contains " + solved  + " solved cells and " + (81 - solved) + " zeros.";
 
     }
-
 
 
     public static void checkForMultipleResults(Sudoku sudoku, int[] solvedPuzzle, int[] puzzle) {

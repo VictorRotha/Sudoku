@@ -13,16 +13,17 @@ public record ClassifierResult(
 
         boolean solutionConfirmed,
 
-        String message
+        String message,
 
+        int score
 ){
 
 
     @Override
     public String toString() {
         return String.format(
-                "ClassifierResult[solvedByDifficulty=%s, alteredByDifficulty=%s, solutionConfirmed=%s, solvableByHuman=%s, message=%s, solution=%s]",
-                Arrays.toString(solvedByDifficulty), Arrays.toString(alteredByDifficulty), solutionConfirmed, solvableByHuman, message, Arrays.toString(solution));
+                "ClassifierResult[solvedByDifficulty=%s, alteredByDifficulty=%s, solutionConfirmed=%s, solvableByHuman=%s, message=%s, score=%s, solution=%s]",
+                Arrays.toString(solvedByDifficulty), Arrays.toString(alteredByDifficulty), solutionConfirmed, solvableByHuman, message, score, Arrays.toString(solution));
     }
 
 }

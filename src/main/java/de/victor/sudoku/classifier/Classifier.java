@@ -33,8 +33,43 @@ public class Classifier {
         this(false);
     }
 
+    public ClassifierResult classify(Puzzle puzzle) {
 
-    public ClassifierResult solve(Puzzle puzzle) {
+        var result = solve(puzzle);
+        var score = estimateSolvingDifficulty(result);
+
+        return new ClassifierResult(
+                result.solvedByDifficulty(),
+                result.alteredByDifficulty(),
+                result.solution(),
+                result.solvableByHuman(),
+                result.solutionConfirmed(),
+                result.message(),
+                score
+        );
+    }
+
+    private int estimateSolvingDifficulty(ClassifierResult classifierResult) {
+
+        if (!classifierResult.solvableByHuman())
+            return -1;
+
+        var  result = 0;
+
+        for (int i = 0; i < classifierResult.solvedByDifficulty().length; i++ ) {
+            result += classifierResult.solvedByDifficulty()[i] * (i+1) * 100;
+        }
+
+        for (int i = 0; i < classifierResult.alteredByDifficulty().length; i++) {
+            if (classifierResult.alteredByDifficulty()[i])
+                result += (i+1) * 1000;
+        }
+
+        return result;
+    }
+
+
+    private ClassifierResult solve(Puzzle puzzle) {
 
         int[] mPuzzle = Arrays.copyOf(puzzle.puzzle(), puzzle.puzzle().length);
 
@@ -112,7 +147,8 @@ public class Classifier {
                 mPuzzle,
                 isSolved,
                 confirmedMessage != null,
-                confirmedMessage
+                confirmedMessage,
+                -1
         );
 
         printDebug(result.toString());
